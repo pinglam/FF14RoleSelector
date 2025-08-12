@@ -119,15 +119,8 @@ async function handleRoleSelect(interaction) {
         const previousEmbed = interaction.message.embeds[0];
         const previousSelections = decodePreviousSelections(previousEmbed?.description);
 
-        const userSelectComponent = interaction.message.components[0]?.components[0];
-        const selectedUserId = userSelectComponent?.data?.default_users?.[0] || interaction.user.id;
-
+        const selectedUserId = previousSelections._selectedUserId || interaction.user.id;
         const selectedUser = await interaction.guild.members.fetch(selectedUserId);
-        if (selectedUser.user.bot) {
-            await interaction.reply({ content: '❌ 不能選擇機器人作為職能使用者。', ephemeral: true });
-            return;
-        }
-
         const username = selectedUser.displayName || selectedUser.user.username;
 
         // Remove any previous role assigned to this user
@@ -153,7 +146,7 @@ async function handleRoleSelect(interaction) {
             .setDescription(`${roleTable}${base64Section}`)
             .setColor(0x00AE86);
 
-        const userMenuRow = new ActionRowBuilder().addComponents(createUserSelectMenu(interaction.user.id));
+        const userMenuRow = new ActionRowBuilder().addComponents(createUserSelectMenu(selectedUserId));
         const selectedRoleKey = getUserRoleKey(previousSelections, username);
         const roleMenuRow = new ActionRowBuilder().addComponents(createRoleSelectMenu(selectedRoleKey));
 
@@ -167,14 +160,46 @@ async function handleRoleSelect(interaction) {
     }
 }
 
+
 // 🔹 Handle user selection silently
 async function handleUserSelect(interaction) {
     try {
-        await interaction.deferUpdate(); // Prevent failure
+        const selectedUser = interaction.users.first();
+        const selectedUserId = selectedUser?.id;
+
+        const previousEmbed = interaction.message.embeds[0];
+        const previousSelections = decodePreviousSelections(previousEmbed?.description);
+
+        // Add selected user ID to selections
+        previousSelections._selectedUserId = selectedUserId;
+
+        const base64Data = Buffer.from(JSON.stringify(previousSelections)).toString('base64');
+        const base64Section = `\n\n🧾 Base64 資料：\n\`\`\`${base64Data}\`\`\``;
+
+        const roleTable = Object.entries(roles).map(([key, label]) => {
+            const user = previousSelections[key] || '冇人做';
+            return `${label}: ${user}`;
+        }).join('\n');
+
+        const embed = new EmbedBuilder()
+            .setTitle('📊 職能選擇')
+            .setDescription(`${roleTable}${base64Section}`)
+            .setColor(0x00AE86);
+
+        const userMenuRow = new ActionRowBuilder().addComponents(createUserSelectMenu(selectedUserId));
+        const selectedRoleKey = getUserRoleKey(previousSelections, username);
+        const roleMenuRow = new ActionRowBuilder().addComponents(createRoleSelectMenu(selectedRoleKey));
+
+        await interaction.update({
+            embeds: [embed],
+            components: [userMenuRow, roleMenuRow],
+            flags: 0
+        });
     } catch (err) {
         logError(err);
     }
 }
+
 
 // 🔹 Main interaction handler
 client.on(Events.InteractionCreate, async interaction => {
