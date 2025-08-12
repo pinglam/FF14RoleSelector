@@ -18,14 +18,14 @@ const client = new Client({
 });
 
 const roles = {
-    MT: 'MT',
-    ST: 'ST',
-    H1: 'H1',
-    H2: 'H2',
-    D1: 'D1',
-    D2: 'D2',
-    D3: 'D3',
-    D4: 'D4'
+    MT: '🔵 MT',
+    ST: '🔵 ST',
+    H1: '🟢 H1',
+    H2: '🟢 H2',
+    D1: '🔴 D1',
+    D2: '🔴 D2',
+    D3: '🔴 D3',
+    D4: '🔴 D4',
 };
 
 // 🔹 Logging function
@@ -48,7 +48,12 @@ function createRoleSelectMenu(selectedRoleKey = null) {
         .setCustomId('role_select')
         .setPlaceholder('選擇職能');
 
-    const options = Object.entries(roles).map(([key, label]) => ({
+    const roleOptions = {
+        nonJoin: "🚫 唔玩",
+        ...roles
+    }
+
+    const options = Object.entries(roleOptions).map(([key, label]) => ({
         label,
         value: key,
         default: key === selectedRoleKey
@@ -93,6 +98,7 @@ async function handleChooseRole(interaction) {
         const roleTable = Object.entries(roles).map(([key, label]) => {
             return `${label}: 冇人做`;
         }).join('\n');
+
 
         const embed = new EmbedBuilder()
             .setTitle('📊 職能選擇')
@@ -185,6 +191,8 @@ async function handleUserSelect(interaction) {
             .setTitle('📊 職能選擇')
             .setDescription(`${roleTable}${base64Section}`)
             .setColor(0x00AE86);
+
+        const username = selectedUser.displayName || selectedUser.user.username;
 
         const userMenuRow = new ActionRowBuilder().addComponents(createUserSelectMenu(selectedUserId));
         const selectedRoleKey = getUserRoleKey(previousSelections, username);
