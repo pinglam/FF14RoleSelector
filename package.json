@@ -1,6 +1,35 @@
 {
-  "dependencies": {
-    "discord.js": "^14.21.0",
-    "dotenv": "^17.2.1"
-  }
+    "dependencies": {
+        "discord.js": "^14.21.0",
+        "dotenv": "^17.2.1",
+        "pkg": "^5.8.1"
+    },
+    "name": "ff14roleselector",
+    "version": "1.0.0",
+    "description": "node register.js\r node index.js",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "pkg index.js -t node16-win-x64  -c package.json -o app.exe",
+        "install": "npm install -g pkg",
+        "start": "node index.js",
+        "registry": "node register.js"
+    },
+    "pkg": {
+        "assets": [
+            "node_modules/**/*"
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pinglam/FF14RoleSelector.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/pinglam/FF14RoleSelector/issues"
+    },
+    "homepage": "https://github.com/pinglam/FF14RoleSelector#readme"
 }
